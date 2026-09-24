@@ -267,7 +267,8 @@ button:disabled {
 
 <h1>☆~ 時代眼淚灌水簿 ~☆</h1>
 
-<div id="homeSection" style="display:none;">
+<!-- 根目錄登入與建窩區 -->
+<div id="homeSection" style="display:block;">
     <div id="loginSubSection" class="container-box">
         <div class="box-title">🪪 進入時代眼淚灌水簿</div>
         <p class="small-note">點擊下方按鈕，使用 Google 帳號一秒登入！</p>
@@ -292,6 +293,7 @@ button:disabled {
     </div>
 </div>
 
+<!-- 各自的小窩/留言板/日記區 -->
 <div id="guestbookSection" style="display:none;">
     <div id="customLogoView" style="text-align:center;margin-bottom:10px;font-weight:bold;font-size:18px;"></div>
     <h1 id="dynamicTitle">☆~ 時代眼淚灌水簿 ~☆</h1>
@@ -1148,7 +1150,10 @@ async function deletePost(index){
 
 window.addEventListener('load', async function(){
     generateCaptcha();
-    if(!currentBoardSlug){ await checkUserAndBoardState(); return; }
+    if(!currentBoardSlug){ 
+        await checkUserAndBoardState(); 
+        return; 
+    }
     document.getElementById('homeSection').style.display = 'none';
     document.getElementById('guestbookSection').style.display = 'block';
     try{
