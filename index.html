@@ -308,7 +308,7 @@ button:disabled {
                 </div>
                 <button id="myBoardButton" style="display:none;" onclick="goToMyBoard()">🏠 回我的家</button>
                 <button id="goToSettingsBtn" style="display:none;" onclick="toggleSettingsView(true)">🎨 進入佈置我的家</button>
-                <button id="goToWriteArticleBtn" style="display:none;" onclick="toggleArticleWriteView(true)" style="background:var(--primary-color); color:#fff;">✍️ 發表站長日記</button>
+                <button id="goToWriteArticleBtn" style="display:none; background:var(--primary-color); color:#fff;" onclick="toggleArticleWriteView(true)">✍️ 發表站長日記</button>
                 <button id="logoutButton" style="display:none;" onclick="handleLogout()">🚪 登出</button>
             </div>
 
@@ -460,7 +460,7 @@ button:disabled {
 
 <script>
 const SUPABASE_URL = 'https://ewoujibrcobxtbtwnqsc.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3b3VqaWJyY29ieHRidHducXNjIiwicm9sZSI6ImFub24iOjE3ODkyMTM4ODksImV4cCI6MjEwNDc4OTg4OX0.nS6eCNMhQyGtb_ZtQTyFlNRIBaYU1FJSWl73QTvmMy4';
+const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3b3VqaWJyY29ieHRidHducXNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMTM4ODksImV4cCI6MjEwNDc4OTg4OX0.nS6eCNMhQyGtb_ZtQTyFlNRIBaYU1FJSWl73QTvmMy4';
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
