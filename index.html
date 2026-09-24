@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>☆~ 時代眼淚灌水簿 - 復古留言板與站長日記 ~☆</title>
-<meta name="description" content="一個充滿千禧年復古風格的網路小窩、站長日記與灌水留言板，快來佈置你的專屬空間、播放懷舊音樂並和朋友互動！">
+<title>☆~ 時代眼淚灌水簿 - 復古留言板與個人部落格 ~☆</title>
+<meta name="description" content="一個充滿千禧年復古風格的網路小窩、個人日記與灌水留言板，快來佈置你的專屬空間、播放懷舊音樂並和朋友互動！">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <style>
-/* 預設全域變數（經典天空藍主題） */
 :root {
     --bg-color: #EBF4FF;
     --text-color: #1E293B;
@@ -230,7 +229,6 @@ button:disabled {
     .side-column { width: 100%; }
 }
 
-/* 復古字體特效 */
 @keyframes flashText { 0% { opacity: 1; text-shadow: 0 0 10px red; } 50% { opacity: 0.2; text-shadow: none; } 100% { opacity: 1; text-shadow: 0 0 10px red; } }
 .blink-text { animation: flashText 0.8s infinite; font-weight: bold; }
 @keyframes swingText { 0% { transform: rotate(0deg); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } 100% { transform: rotate(0deg); } }
@@ -280,13 +278,13 @@ button:disabled {
     <div id="setupBoardSubSection" class="container-box" style="display:none; margin-top:20px;">
         <div class="box-title">🌸 歡迎！請先設定你的專屬小窩才能開始使用</div>
         <label>顯示暱稱（大家會看到的名字）：</label>
-        <input type="text" id="regDisplayName" maxlength="40" placeholder="例如：天空藍小築">
+        <input type="text" id="regDisplayName" maxlength="40" placeholder="例如：阿猴小築">
         
-        <label>你的家網址代號（英文/數字，例如 sky2026）：</label>
-        <input type="text" id="regBoardSlug" maxlength="40" placeholder="例如：sky2026">
+        <label>你的家網址代號（英文/數字，例如 monkey48）：</label>
+        <input type="text" id="regBoardSlug" maxlength="40" placeholder="例如：monkey48">
         
         <label>你的家標題名稱：</label>
-        <input type="text" id="regBoardTitle" maxlength="80" placeholder="例如：天空藍的音樂基地">
+        <input type="text" id="regBoardTitle" maxlength="80" placeholder="例如：阿猴的音樂基地">
         
         <button id="saveNewBoardBtn" onclick="handleSaveFirstBoard()" style="width:100%; border-radius:8px;">✨ 完成設定，進入我的家</button>
         <button onclick="handleLogout()" style="width:100%; margin-top:10px; border-radius:8px;">🚪 登出並更換帳號</button>
@@ -310,7 +308,7 @@ button:disabled {
                 </div>
                 <button id="myBoardButton" style="display:none;" onclick="goToMyBoard()">🏠 回我的家</button>
                 <button id="goToSettingsBtn" style="display:none;" onclick="toggleSettingsView(true)">🎨 進入佈置我的家</button>
-                <button id="goToWriteArticleBtn" style="display:none; background:var(--primary-color); color:#fff;" onclick="toggleArticleWriteView(true)">✍️ 發表站長日記</button>
+                <button id="goToWriteArticleBtn" style="display:none; background:var(--primary-color); color:#fff;" onclick="toggleArticleWriteView(true)"><span id="writeBtnText">✍️ 發表文章</span></button>
                 <button id="logoutButton" style="display:none;" onclick="handleLogout()">🚪 登出</button>
             </div>
 
@@ -322,10 +320,10 @@ button:disabled {
                 </div>
             </div>
 
-            <!-- 切換檢視標籤：留言板 vs 站長日記 -->
+            <!-- 切換檢視標籤：留言板 vs 自訂日記 -->
             <div style="display:flex; gap:10px; margin-bottom:15px;">
                 <button onclick="switchTab('guestbook')" id="tabGuestbookBtn" style="flex:1; margin-top:0; background:var(--primary-color); color:#fff;">💬 訪客灌水留言板</button>
-                <button onclick="switchTab('articles')" id="tabArticlesBtn" style="flex:1; margin-top:0;">📖 站長日記 (Blog)</button>
+                <button onclick="switchTab('articles')" id="tabArticlesBtn" style="flex:1; margin-top:0;"><span id="tabArticleBtnText">📖 站長日記</span></button>
             </div>
 
             <!-- 留言板區域 -->
@@ -348,11 +346,11 @@ button:disabled {
                 </div>
             </div>
 
-            <!-- 站長日記區域 -->
+            <!-- 自訂日記區域 -->
             <div id="tabContentArticles" style="display:none;">
                 <div class="container-box" style="border-style:solid;">
-                    <div class="box-title">📖 站長日記列表</div>
-                    <div id="articleListContainer"><div class="loading">正在讀取日記……</div></div>
+                    <div class="box-title"><span id="articleListTitleText">📖 站長日記列表</span></div>
+                    <div id="articleListContainer"><div class="loading">正在讀取文章……</div></div>
                 </div>
             </div>
 
@@ -382,7 +380,7 @@ button:disabled {
 <!-- 發表/編輯文章頁面 -->
 <div id="articleWriteSection" style="display:none; max-width:750px; margin:20px auto;">
     <div class="container-box admin-box">
-        <div class="box-title">✍️ 發表新日記文章</div>
+        <div class="box-title">✍️ 發表新文章</div>
         <label>文章標題：</label>
         <input type="text" id="newArticleTitle" placeholder="例如：今天的天空很藍...">
         
@@ -402,7 +400,7 @@ button:disabled {
 <!-- 單篇詳細文章與迴響檢視區 -->
 <div id="articleDetailSection" style="display:none; max-width:850px; margin:20px auto;">
     <div class="container-box">
-        <button onclick="backToArticleList()" style="margin-top:0; margin-bottom:15px;">⬅️ 返回日記列表</button>
+        <button onclick="backToArticleList()" style="margin-top:0; margin-bottom:15px;" id="backToListBtn">⬅️ 返回列表</button>
         <div id="singleArticleView"></div>
         <div style="margin-top:25px;" class="box-title">💬 文章迴響</div>
         <div id="articleCommentList"></div>
@@ -414,11 +412,15 @@ button:disabled {
     </div>
 </div>
 
+<!-- 佈置我的家設定頁面 -->
 <div id="settingsSection" style="display:none; max-width:750px; margin:20px auto;">
     <div class="container-box admin-box">
-        <div class="box-title">🎨 佈置我的家（版面與音樂設定）</div>
-        <p class="small-note">在這裡你可以自由裝潢你的小窩，選擇成套美感主題或自訂 CSS 語法！</p>
+        <div class="box-title">🎨 佈置我的家（版面與日記名稱設定）</div>
+        <p class="small-note">在這裡你可以自由裝潢你的小窩，並自訂你的個人日記專區名稱（例如：阿猴之七嘴八舌）！</p>
         
+        <label>📖 自訂你的日記專區名稱（按鈕與標題會自動同步）：</label>
+        <input type="text" id="editArticleSectionTitle" placeholder="例如：阿猴之七嘴八舌">
+
         <label>🎨 快速選擇成套美感配色主題：</label>
         <select id="presetThemeSelect" onchange="applyPresetThemeLocally()">
             <option value="skyblue">☁️ 經典天空藍 (粉藍色調清新風)</option>
@@ -446,7 +448,7 @@ button:disabled {
         <textarea id="editRules" rows="3"></textarea>
 
         <label>✏ 進階自訂 CSS（可自由調整專屬樣式）：</label>
-        <textarea id="editCssSyntax" rows="5" placeholder="例如輸入自訂 CSS 語法來微調外觀..."></textarea>
+        <textarea id="editCssSyntax" rows="5" placeholder="輸入你的專屬 CSS 語法..."></textarea>
 
         <div style="margin-top:20px; display:flex; gap:10px;">
             <button id="saveAdminBtn" onclick="handleSaveAdminSettings()">💾 儲存並套用裝潢</button>
@@ -688,6 +690,13 @@ async function loadBoard(){
     
     document.getElementById('dynamicTitle').innerText = `☆~ ${data.title || data.slug} ~☆`;
     
+    // 動態更新頁面上的日記名稱（分頁按鈕、列表標題、發表按鈕）
+    const customName = data.article_section_title || '站長日記';
+    document.getElementById('tabArticleBtnText').innerText = `📖 ${customName}`;
+    document.getElementById('articleListTitleText').innerText = `📖 ${customName}列表`;
+    document.getElementById('writeBtnText').innerText = `✍️ 發表${customName}`;
+    document.getElementById('backToListBtn').innerText = `⬅️ 返回${customName}列表`;
+
     if(data.custom_css) {
         document.getElementById('editCssSyntax').value = data.custom_css;
         document.getElementById('themeStyles').textContent = data.custom_css;
@@ -824,6 +833,7 @@ async function updateAdminUI(){
         document.getElementById('editMusicTitle').value = currentBoard.music_title || '';
         document.getElementById('editMusicStart').value = currentBoard.music_start || '';
         document.getElementById('editMusicEnd').value = currentBoard.music_end || '';
+        document.getElementById('editArticleSectionTitle').value = currentBoard.article_section_title || '站長日記';
     }
 }
 
@@ -836,6 +846,7 @@ async function handleSaveAdminSettings(){
     const musicTitle = document.getElementById('editMusicTitle').value.trim();
     const musicStart = document.getElementById('editMusicStart').value.trim();
     const musicEnd = document.getElementById('editMusicEnd').value.trim();
+    const articleSectionTitle = document.getElementById('editArticleSectionTitle').value.trim() || '站長日記';
 
     if (musicUrl !== '' && !extractYouTubeId(musicUrl)) return alert('❌ 音樂設定失敗：僅能填寫 YouTube 網址！');
 
@@ -845,7 +856,12 @@ async function handleSaveAdminSettings(){
 
     try {
         const { error } = await supabaseClient.rpc('update_my_board_settings', {
-            p_title: currentBoard.title, p_custom_css: css, p_rules: rules, p_logo_text: logo, p_music_url: musicUrl
+            p_title: currentBoard.title, 
+            p_custom_css: css, 
+            p_rules: rules, 
+            p_logo_text: logo, 
+            p_music_url: musicUrl,
+            p_article_section_title: articleSectionTitle
         });
         await supabaseClient.from('boards').update({ music_title: musicTitle, music_start: musicStart, music_end: musicEnd }).eq('id', currentBoard.id);
         if(error) return alert('❌ 儲存失敗：' + translateSupabaseError(error.message));
@@ -882,7 +898,7 @@ async function handleSaveNewArticle(){
             password: password ? password : null
         }]);
         if(error) return alert('❌ 發布失敗：' + error.message);
-        alert('🎉 站長日記發表成功！');
+        alert('🎉 文章發表成功！');
         document.getElementById('newArticleTitle').value = '';
         document.getElementById('newArticleContent').value = '';
         document.getElementById('newArticlePassword').value = '';
@@ -912,7 +928,8 @@ function renderArticles(){
     const container = document.getElementById('articleListContainer');
     if(!container) return;
     container.innerHTML = '';
-    if(!articlesCache.length){ container.innerHTML = '<p style="text-align:center;">【目前尚無站長日記】</p>'; return; }
+    const sectionName = currentBoard.article_section_title || '站長日記';
+    if(!articlesCache.length){ container.innerHTML = `<p style="text-align:center;">【目前尚無${sectionName}文章】</p>`; return; }
 
     articlesCache.forEach(art => {
         const item = document.createElement('div');
@@ -922,7 +939,7 @@ function renderArticles(){
         item.innerHTML = `
             <div class="article-meta">📅 ${new Date(art.created_at).toLocaleString()} ${hasPassword ? ' | 🔒 有密碼鎖' : ' | 🌐 公開'}</div>
             <div style="font-size:17px; font-weight:bold; color:var(--title-color); margin-bottom:8px;">${escapeHtml(art.title)}</div>
-            <button onclick="openArticle('${art.id}', ${hasPassword})">📖 閱讀日記</button>
+            <button onclick="openArticle('${art.id}', ${hasPassword})">📖 閱讀文章</button>
             ${isModerator ? `<button onclick="deleteArticle('${art.id}')" style="background:#FEE2E2; color:#991B1B; border-color:#F87171; margin-left:5px;">🗑️ 刪除</button>` : ''}
         `;
         container.appendChild(item);
@@ -934,7 +951,7 @@ async function openArticle(articleId, hasPassword){
     if(!art) return;
 
     if(hasPassword && !isModerator){
-        const pwd = prompt('這篇日記有密碼鎖，請輸入閱讀密碼：');
+        const pwd = prompt('這篇文章有密碼鎖，請輸入閱讀密碼：');
         if(pwd !== art.password) { alert('❌ 密碼錯誤！'); return; }
     }
 
@@ -1019,7 +1036,7 @@ async function deleteArticleComment(commentId){
 }
 
 async function deleteArticle(articleId){
-    if(!confirm('確定刪除這篇日記嗎？')) return;
+    if(!confirm('確定刪除這篇文章嗎？')) return;
     const { error } = await supabaseClient.from('articles').update({ deleted_at: new Date() }).eq('id', articleId);
     if(error) return alert('刪除失敗');
     loadArticles();
