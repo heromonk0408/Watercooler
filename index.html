@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>☆~ 時代眼淚灌水簿 ~☆</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<style>
+/* 預設全域變數（經典天空藍主題） */
+:root {
+    --bg-color: #EBF4FF;
+    --text-color: #1E293B;
+    --box-bg: #FFFFFF;
+    --border-color: #7DD3FC;
+    --primary-color: #0284C7;
+    --title-color: #0369A1;
+    --button-bg: #F0F9FF;
+    --button-hover: #0284C7;
+    --button-text: #0369A1;
+}
+
+body{
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family:"新細明體","Microsoft JhengHei",sans-serif;
+    margin:0;
+    padding:20px;
+    transition: background 0.3s, color 0.3s;
+}
+h1{
+    text-align:center;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px rgba(2,132,199,0.2);
+    font-size:26px;
+    margin-bottom:25px;
+    font-weight:bold;
+}
+.container-box{
+    max-width:850px;
+    margin:0 auto 20px auto;
+    background: var(--box-bg);
+    border: 2px solid var(--border-color);
+    padding:20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius:10px;
+    transition: all 0.3s;
+}
+.admin-box{
+    border:2px solid var(--primary-color);
+    background: var(--box-bg);
+}
+.box-title{
+    color: var(--title-color);
+    font-weight:bold;
+    font-size:16px;
+    border-bottom:2px dotted var(--border-color);
+    padding-bottom:6px;
+    margin-bottom:15px;
+}
+label{
+    display:block;
+    margin-top:12px;
+    font-size:14px;
+    color: var(--title-color);
+    font-weight:bold;
+}
+input[type="text"],
+select,
+textarea{
+    width:100%;
+    background: var(--box-bg);
+    border:1px solid var(--border-color);
+    color: var(--text-color);
+    padding:9px;
+    box-sizing:border-box;
+    font-size:14px;
+    margin-top:5px;
+    border-radius:6px;
+}
+input:focus,
+textarea:focus,
+select:focus{
+    outline:none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 8px rgba(2,132,199,.3);
+}
+button{
+    background: var(--button-bg);
+    border:1px solid var(--primary-color);
+    color: var(--button-text);
+    padding:8px 20px;
+    cursor:pointer;
+    font-weight:bold;
+    margin-top:15px;
+    border-radius:20px;
+    transition: all 0.2s;
+}
+button:hover{
+    background: var(--button-hover);
+    color:#fff;
+}
+button:disabled {
+    background: #CBD5E1 !important;
+    border-color: #94A3B8 !important;
+    color: #64748B !important;
+    cursor: not-allowed;
+}
+.post-card{
+    background: var(--box-bg);
+    border:1px solid var(--border-color);
+    padding:15px;
+    margin-top:15px;
+    border-radius:8px;
+}
+.post-meta{
+    font-size:12px;
+    color: var(--primary-color);
+    border-bottom: 1px dotted var(--border-color);
+    padding-bottom:5px;
+    margin-bottom:10px;
+    font-weight:bold;
+}
+.post-body{
+    font-size:15px;
+    line-height:1.6;
+    color: var(--text-color);
+    overflow-wrap:anywhere;
+}
+.post-actions{
+    margin-top:10px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+.post-actions button, .post-actions a.action-btn{
+    margin-top:0;
+    padding:5px 12px;
+    font-size:12px;
+    background: var(--button-bg);
+    border:1px solid var(--primary-color);
+    color: var(--button-text);
+    font-weight:bold;
+    border-radius:20px;
+    text-decoration:none;
+    display:inline-block;
+}
+.post-actions button:hover, .post-actions a.action-btn:hover{
+    background: var(--button-hover);
+    color:#fff;
+}
+.reply-card{
+    margin:10px 0 0 20px;
+    padding:10px;
+    border-left: 3px solid var(--primary-color);
+    background: var(--box-bg);
+    border-radius:4px;
+    opacity: 0.95;
+}
+.reply-meta{
+    font-size:12px;
+    color: var(--title-color);
+    margin-bottom:5px;
+    font-weight:bold;
+}
+.reply-form{
+    margin-top:8px;
+    display:none;
+}
+.captcha-zone{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:5px;
+}
+#captchaCode{
+    color: var(--title-color);
+    font-weight:bold;
+    font-size:18px;
+    letter-spacing:3px;
+    background: var(--box-bg);
+    padding:4px 12px;
+    border:1px solid var(--border-color);
+    border-radius:6px;
+}
+.footer-note{
+    text-align:center;
+    font-size:12px;
+    color: var(--text-color);
+    opacity: 0.8;
+    margin-top:35px;
+    line-height:1.6;
+    background: var(--box-bg);
+    border:1px dotted var(--border-color);
+    padding:15px;
+    border-radius:8px;
+}
+.account-status{
+    color: var(--title-color);
+    font-size:13px;
+    line-height:1.6;
+    font-weight:bold;
+}
+.small-note{
+    font-size:12px;
+    color: var(--text-color);
+    opacity: 0.8;
+    line-height:1.5;
+}
+.loading{
+    text-align:center;
+    color: var(--primary-color);
+    padding:20px;
+}
+.content-wrapper {
+    display: flex;
+    gap: 20px;
+    max-width: 950px;
+    margin: 0 auto;
+}
+.main-column { flex: 1; }
+.side-column { width: 280px; flex-shrink: 0; }
+@media (max-width: 768px) {
+    .content-wrapper { flex-direction: column; }
+    .side-column { width: 100%; }
+}
+
+/* 復古字體特效 */
+@keyframes flashText { 0% { opacity: 1; text-shadow: 0 0 10px red; } 50% { opacity: 0.2; text-shadow: none; } 100% { opacity: 1; text-shadow: 0 0 10px red; } }
+.blink-text { animation: flashText 0.8s infinite; font-weight: bold; }
+@keyframes swingText { 0% { transform: rotate(0deg); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } 100% { transform: rotate(0deg); } }
+.swing-text { display: inline-block; animation: swingText 0.5s ease-in-out infinite; font-weight: bold; }
+@keyframes rainbowColor { 0% { color: red; } 20% { color: orange; } 40% { color: yellow; } 60% { color: green; } 80% { color: blue; } 100% { color: purple; } }
+.rainbow-text { animation: rainbowColor 2s linear infinite; font-weight: bold; }
+@keyframes bounceText { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.bounce-text { display: inline-block; animation: bounceText 0.4s ease-in-out infinite; font-weight: bold; }
+.neon-text { color: #fff; text-shadow: 0 0 5px #fff, 0 0 10px #ff00de; font-weight: bold; }
+
+.music-box-container {
+    background: var(--box-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+.music-title-line { font-weight: bold; color: var(--title-color); font-size: 14px; margin-bottom: 8px; }
+.music-player-bar { margin-bottom: 6px; background: var(--border-color); height: 8px; border-radius: 4px; overflow: hidden; cursor: pointer; }
+.music-player-progress { width: 0%; height: 100%; background: var(--primary-color); pointer-events: none; }
+.music-time-display { font-size: 11px; opacity: 0.8; margin-bottom: 6px; }
+.music-info-line { font-size: 13px; color: var(--primary-color); margin-bottom: 10px; font-weight: bold; word-break: break-all; }
+.music-control-btns { display: flex; justify-content: center; gap: 8px; }
+.music-control-btns button { margin-top: 0; padding: 4px 16px; font-size: 12px; }
+</style>
+<style id="themeStyles"></style>
+</head>
+
+<body>
+
+<marquee scrollamount="4" style="font-weight:bold;margin-bottom:15px;font-size:14px;">
+時代的眼淚 沒有流量焦慮的樹洞，這裡沒有演算法,只有你想念的走馬燈與音樂盒。
+</marquee>
+
+<h1>☆~ 時代眼淚灌水簿 ~☆</h1>
+
+<div id="homeSection" style="display:none;">
+    <div id="loginSubSection" class="container-box">
+        <div class="box-title">🪪 進入時代眼淚灌水簿</div>
+        <p class="small-note">點擊下方按鈕，使用 Google 帳號一秒登入！</p>
+        <button type="button" onclick="handleGoogleLogin()" style="background:#DB4437; color:#fff; border:none; padding:12px 20px; font-size:15px; width:100%; border-radius:8px; cursor:pointer;">
+            🌐 使用 Google 帳號一秒登入
+        </button>
+    </div>
+
+    <div id="setupBoardSubSection" class="container-box" style="display:none; margin-top:20px;">
+        <div class="box-title">🌸 歡迎！請先設定你的專屬小窩才能開始使用</div>
+        <label>顯示暱稱（大家會看到的名字）：</label>
+        <input type="text" id="regDisplayName" maxlength="40" placeholder="例如：天空藍小築">
+        
+        <label>你的家網址代號（英文/數字，例如 sky2026）：</label>
+        <input type="text" id="regBoardSlug" maxlength="40" placeholder="例如：sky2026">
+        
+        <label>你的家標題名稱：</label>
+        <input type="text" id="regBoardTitle" maxlength="80" placeholder="例如：天空藍的音樂基地">
+        
+        <button id="saveNewBoardBtn" onclick="handleSaveFirstBoard()" style="width:100%; border-radius:8px;">✨ 完成設定，進入我的家</button>
+        <button onclick="handleLogout()" style="width:100%; margin-top:10px; border-radius:8px;">🚪 登出並更換帳號</button>
+    </div>
+</div>
+
+<div id="guestbookSection" style="display:none;">
+    <div id="customLogoView" style="text-align:center;margin-bottom:10px;font-weight:bold;font-size:18px;"></div>
+    <h1 id="dynamicTitle">☆~ 時代眼淚灌水簿 ~☆</h1>
+
+    <div class="content-wrapper">
+        <div class="main-column">
+            <div class="container-box">
+                <div class="box-title">👤 會員狀態</div>
+                <div id="accountStatus" class="account-status">正在確認登入狀態……</div>
+                <div id="boardLoginArea" style="display:none; margin-top:10px;">
+                    <button type="button" onclick="handleGoogleLogin()" style="background:#DB4437; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">
+                        🌐 使用 Google 登入
+                    </button>
+                </div>
+                <button id="myBoardButton" style="display:none;" onclick="goToMyBoard()">🏠 回我的家</button>
+                <button id="goToSettingsBtn" style="display:none;" onclick="toggleSettingsView(true)">🎨 進入佈置我的家</button>
+                <button id="logoutButton" style="display:none;" onclick="handleLogout()">🚪 登出</button>
+            </div>
+
+            <div class="container-box">
+                <div class="box-title">📢 版規與安全提示</div>
+                <div id="customRulesView" style="font-size:13px;line-height:1.6;">
+                    1. 🚫 嚴禁霸凌、詐騙、色情、暴力與不雅髒話。<br>
+                    2. 🌸 歡迎使用復古閃字與音樂盒。
+                </div>
+            </div>
+
+            <div id="guestPostForm" class="container-box" style="display:none;">
+                <div class="box-title">✍ 留言區</div>
+                <label>留言內容：</label>
+                <textarea id="content" rows="4" maxlength="5000" placeholder="✨ 支援 [blink]閃爍[/blink]、[rainbow]彩虹[/rainbow]、[swing]搖擺[/swing] 等語法！"></textarea>
+                <label>請輸入驗證碼：</label>
+                <div class="captcha-zone">
+                    <span id="captchaCode">1234</span>
+                    <input type="text" id="captchaInput" maxlength="4" style="width:130px;margin-top:0;">
+                </div>
+                <button id="postBtn" onclick="handleSecureSubmit()">確認送出留言 👣</button>
+            </div>
+
+            <div class="container-box" style="border-style:solid;">
+                <div class="box-title">💬 訪客留言</div>
+                <div id="securePostList"><div class="loading">正在讀取留言……</div></div>
+            </div>
+        </div>
+
+        <div class="side-column">
+            <div class="container-box" style="text-align:center;">
+                <div class="box-title">🎵 背景音樂盒</div>
+                <div class="music-box-container">
+                    <div class="music-title-line">🎶 MP3 背景音樂</div>
+                    <div class="music-player-bar" onclick="seekMusic(event)">
+                        <div class="music-player-progress" id="musicProgressBar"></div>
+                    </div>
+                    <div class="music-time-display" id="musicTimeText">00:00 / 00:00</div>
+                    <div class="music-info-line" id="musicInfoText">載入中……</div>
+                    <div class="music-control-btns">
+                        <button onclick="playMusic()">▶ 播放</button>
+                        <button onclick="pauseMusic()">❚❚ 暫停</button>
+                    </div>
+                    <div id="youtubePlayerElement" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="settingsSection" style="display:none; max-width:750px; margin:20px auto;">
+    <div class="container-box admin-box">
+        <div class="box-title">🎨 佈置我的家（版面與音樂設定）</div>
+        <p class="small-note">在這裡你可以自由裝潢你的小窩，選擇成套美感主題或自訂 CSS 語法！</p>
+        
+        <label>🎨 快速選擇成套美感配色主題：</label>
+        <select id="presetThemeSelect" onchange="applyPresetThemeLocally()">
+            <option value="skyblue">☁️ 經典天空藍 (粉藍色調清新風)</option>
+            <option value="sakura">🌸 懷舊櫻花粉 (粉紅色框與浪漫字體)</option>
+            <option value="mint">🌿 森林薄荷綠 (自然舒爽清新綠)</option>
+            <option value="dark">🐼 簡約黑白灰 (沈穩高質感灰階風)</option>
+        </select>
+
+        <label>🎵 YouTube 歌曲網址：</label>
+        <input type="text" id="editMusicUrl" placeholder="例如：https://youtu.be/HMy3VDfnlCY">
+
+        <label>🎤 歌手及歌名：</label>
+        <input type="text" id="editMusicTitle" placeholder="例如：S.H.E - 魔力">
+
+        <label>⏱️ 開始秒數：</label>
+        <input type="text" id="editMusicStart" placeholder="例如：60">
+
+        <label>⏱️ 結束秒數：</label>
+        <input type="text" id="editMusicEnd" placeholder="例如：120">
+
+        <label>✨ 招牌 Logo 文字：</label>
+        <input type="text" id="editLogoText" placeholder="例如：☆～ 我的秘密基地 ～☆">
+
+        <label>📢 版規與公告內容：</label>
+        <textarea id="editRules" rows="3"></textarea>
+
+        <label>✏ 進階自訂 CSS（可自由調整專屬樣式）：</label>
+        <textarea id="editCssSyntax" rows="5" placeholder="例如輸入自訂 CSS 語法來微調外觀..."></textarea>
+
+        <div style="margin-top:20px; display:flex; gap:10px;">
+            <button id="saveAdminBtn" onclick="handleSaveAdminSettings()">💾 儲存並套用裝潢</button>
+            <button onclick="toggleSettingsView(false)">❌ 返回我的家首頁</button>
+        </div>
+    </div>
+</div>
+
+<div class="footer-note">
+    <strong>⚠️ 時代眼淚灌水簿使用聲明 ⚠️</strong><br>
+    嚴禁惡意攻擊，音樂採用 YouTube 官方合法嵌入，安全無虞。
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ewoujibrcobxtbtwnqsc.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3b3VqaWJyY29ieHRidHducXNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMTM4ODksImV4cCI6MjEwNDc4OTg4OX0.nS6eCNMhQyGtb_ZtQTyFlNRIBaYU1FJSWl73QTvmMy4';
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let currentUser = null;
+let currentBoard = null;
+let currentBoardSlug = null;
+let isModerator = false;
+let postsCache = [];
+let currentCaptcha = '';
+
+let ytPlayer = null;
+let progressTimer = null;
+let endCheckTimer = null;
+
+const urlParams = new URLSearchParams(window.location.search);
+currentBoardSlug = urlParams.get('id');
+
+function translateSupabaseError(errorMsg) {
+    if (!errorMsg) return '發生未知錯誤，請稍後再試。';
+    if (errorMsg.includes('rate limit')) return '系統繁忙，請稍候再試一次喔～';
+    return `系統提示：${errorMsg}`;
+}
+
+function escapeHtml(text){
+    return String(text ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function validateAndCleanContent(text) {
+    if (!text) return { valid: true, text: '' };
+    const scamKeywords = ['密碼', 'password', '驗證碼', '客服', '管理員', '官方', '中獎', '領獎', '加line', '加賴', '投資明牌'];
+    for (let word of scamKeywords) {
+        if (text.toLowerCase().includes(word)) {
+            return { valid: false, message: '❌ 為了維護純粹友善的樹洞，禁止張貼索取密碼、驗證碼或誘導加賴詐騙的言論！' };
+        }
+    }
+    const strictBadWords = ['幹你娘', '幹拎娘', '趕羚羊', '幹您娘', '操你媽', '操你媽逼', '智障', '白痴', '廢物', '魯蛇', '破麻', '去死吧'];
+    for (let word of strictBadWords) {
+        if (text.includes(word)) {
+            return { valid: false, message: '❌ 為了維護復古小窩的溫馨美好，請勿使用不雅髒話或霸凌字眼喔！' };
+        }
+    }
+    let checkText = text.replace(/幹嘛/g, '').replace(/幹什麼/g, '').replace(/骨幹/g, '').replace(/樹幹/g, '');
+    if (checkText.includes('幹') && !checkText.includes('幹得好') && !checkText.includes('幹勁')) {
+        if (checkText.includes('幹你') || checkText.includes('幹死') || checkText === '幹' || checkText.endsWith('幹') || checkText.startsWith('幹 ')) {
+            return { valid: false, message: '❌ 請保持友善，避免使用不雅字眼！' };
+        }
+    }
+    return { valid: true, text: text };
+}
+
+function parseSecureContent(text){
+    let safeText = escapeHtml(text);
+    const safeColor = '(?:#[0-9a-fA-F]{3,8}|[a-zA-Z]{1,20})';
+    
+    safeText = safeText.replace(/\[marquee\](.*?)\[\/marquee\]/gi, "<marquee scrollamount='5' style='font-weight:bold;'>$1</marquee>");
+    safeText = safeText.replace(/\[blink\](.*?)\[\/blink\]/gi, "<span class='blink-text'>$1</span>");
+    safeText = safeText.replace(/\[swing\](.*?)\[\/swing\]/gi, "<span class='swing-text'>$1</span>");
+    safeText = safeText.replace(/\[rainbow\](.*?)\[\/rainbow\]/gi, "<span class='rainbow-text'>$1</span>");
+    safeText = safeText.replace(/\[bounce\](.*?)\[\/bounce\]/gi, "<span class='bounce-text'>$1</span>");
+    safeText = safeText.replace(/\[neon\](.*?)\[\/neon\]/gi, "<span class='neon-text'>$1</span>");
+    safeText = safeText.replace(/\[wave\](.*?)\[\/wave\]/gi, "<span class='wave-text'>$1</span>");
+
+    safeText = safeText.replace(new RegExp('\\[font\\s+color=(' + safeColor + ')\\s*\\](.*?)\\[\\/font\\]', 'gi'), "<span style=\"color:$1\">$2</span>");
+    safeText = safeText.replace(new RegExp('\\[glow=(' + safeColor + ')\\](.*?)\\[\\/glow\\]', 'gi'), "<span style=\"color:#fff;text-shadow:0 0 8px $1,0 0 15px $1\">$2</span>");
+    
+    safeText = safeText.replace(/https?:\/\/[^\s]+\.(jpg|jpeg|png|webp|svg)/gi, ' [不允許一般照片] ');
+    safeText = safeText.replace(/(https?:\/\/[^\s]+\.gif)/gi, '<img src="$1" alt="閃字" style="max-height:40px; vertical-align:middle;">');
+    safeText = safeText.replace(/(https?:\/\/[^\s]+|www\.[^\s]+)/gi, ' [連結已被系統擦除] ');
+    return safeText;
+}
+
+function extractYouTubeId(url) {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function generateCaptcha(){
+    currentCaptcha = Math.floor(1000 + Math.random() * 9000).toString();
+    const el = document.getElementById('captchaCode');
+    if(el) el.innerText = currentCaptcha;
+}
+
+async function refreshAuth(){
+    const { data } = await supabaseClient.auth.getSession();
+    currentUser = data?.session?.user || null;
+    return currentUser;
+}
+
+async function getMyBoardSlug(){
+    if(!currentUser) return null;
+    let slug = currentUser.user_metadata?.board_slug;
+    if(slug) return slug;
+    const { data } = await supabaseClient.from('boards').select('slug').eq('owner_id', currentUser.id).maybeSingle();
+    return data?.slug || null;
+}
+
+async function handleGoogleLogin() {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: window.location.origin + window.location.pathname + (currentBoardSlug ? '?id=' + encodeURIComponent(currentBoardSlug) : '')
+        }
+    });
+    if (error) alert('❌ Google 登入失敗：' + error.message);
+}
+
+async function checkUserAndBoardState() {
+    const { data } = await supabaseClient.auth.getSession();
+    currentUser = data?.session?.user || null;
+    if (!currentUser) {
+        document.getElementById('homeSection').style.display = 'block';
+        document.getElementById('loginSubSection').style.display = 'block';
+        document.getElementById('setupBoardSubSection').style.display = 'none';
+        return;
+    }
+    const { data: existingBoard } = await supabaseClient.from('boards').select('*').eq('owner_id', currentUser.id).maybeSingle();
+    if (!existingBoard) {
+        document.getElementById('homeSection').style.display = 'block';
+        document.getElementById('loginSubSection').style.display = 'none';
+        document.getElementById('setupBoardSubSection').style.display = 'block';
+        document.getElementById('regDisplayName').value = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || '';
+    } else {
+        currentBoard = existingBoard;
+        currentBoardSlug = existingBoard.slug;
+        if (!urlParams.get('id')) window.location.href = window.location.pathname + '?id=' + encodeURIComponent(currentBoardSlug);
+    }
+}
+
+async function handleSaveFirstBoard() {
+    const displayName = document.getElementById('regDisplayName').value.trim();
+    const slug = document.getElementById('regBoardSlug').value.trim().toLowerCase();
+    const boardTitle = document.getElementById('regBoardTitle').value.trim();
+
+    if (!displayName || !slug || !boardTitle) return alert('請填寫完整資訊！');
+    const btn = document.getElementById('saveNewBoardBtn');
+    btn.disabled = true;
+    btn.innerText = '建立中...';
+
+    try {
+        await supabaseClient.auth.updateUser({ data: { display_name: displayName, board_slug: slug, board_title: boardTitle } });
+        const { error } = await supabaseClient.rpc('create_personal_board', { p_slug: slug, p_title: boardTitle });
+        if (error) return alert('❌ 建立失敗（可能代號已被使用）：' + error.message);
+        alert('🎉 你的家建立成功！');
+        window.location.href = window.location.pathname + '?id=' + encodeURIComponent(slug);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = '✨ 完成設定，進入我的家';
+    }
+}
+
+async function handleLogout(){
+    await supabaseClient.auth.signOut();
+    window.location.href = window.location.pathname;
+}
+
+async function goToMyBoard(){
+    if(!currentUser) return;
+    let slug = await getMyBoardSlug();
+    if(!slug) { window.location.href = window.location.pathname; return; }
+    window.location.href = window.location.pathname + '?id=' + encodeURIComponent(slug);
+}
+
+function toggleSettingsView(show){
+    if(show){
+        document.getElementById('guestbookSection').style.display = 'none';
+        document.getElementById('settingsSection').style.display = 'block';
+    } else {
+        document.getElementById('settingsSection').style.display = 'none';
+        document.getElementById('guestbookSection').style.display = 'block';
+    }
+    window.scrollTo(0,0);
+}
+
+/* 成套連動配色：點選即時產生完整變數並套用，同時支援自訂 CSS 疊加 */
+function applyPresetThemeLocally(){
+    const theme = document.getElementById('presetThemeSelect').value;
+    let cssVarBlock = '';
+    if(theme === 'skyblue'){
+        cssVarBlock = `:root { --bg-color: #EBF4FF; --text-color: #1E293B; --box-bg: #FFFFFF; --border-color: #7DD3FC; --primary-color: #0284C7; --title-color: #0369A1; --button-bg: #F0F9FF; --button-hover: #0284C7; --button-text: #0369A1; }`;
+    } else if(theme === 'sakura'){
+        cssVarBlock = `:root { --bg-color: #FFF1F2; --text-color: #4C0519; --box-bg: #FFFFFF; --border-color: #FDA4AF; --primary-color: #E11D48; --title-color: #BE123C; --button-bg: #FFF1F2; --button-hover: #E11D48; --button-text: #BE123C; }`;
+    } else if(theme === 'mint'){
+        cssVarBlock = `:root { --bg-color: #F0FDF4; --text-color: #14532D; --box-bg: #FFFFFF; --border-color: #86EFAC; --primary-color: #16A34A; --title-color: #15803D; --button-bg: #F0FDF4; --button-hover: #16A34A; --button-text: #15803D; }`;
+    } else if(theme === 'dark'){
+        cssVarBlock = `:root { --bg-color: #F8FAFC; --text-color: #334155; --box-bg: #FFFFFF; --border-color: #CBD5E1; --primary-color: #475569; --title-color: #1E293B; --button-bg: #F1F5F9; --button-hover: #475569; --button-text: #334155; }`;
+    }
+    document.getElementById('editCssSyntax').value = cssVarBlock;
+    document.getElementById('themeStyles').textContent = cssVarBlock;
+}
+
+async function loadBoard(){
+    if(!currentBoardSlug) return;
+    const { data, error } = await supabaseClient.from('boards').select('*').eq('slug', currentBoardSlug).maybeSingle();
+    if(error) throw error;
+    if(!data) throw new Error('找不到這個家。');
+    currentBoard = data;
+    
+    document.getElementById('dynamicTitle').innerText = `☆~ ${data.title || data.slug} ~☆`;
+    
+    if(data.custom_css) {
+        document.getElementById('editCssSyntax').value = data.custom_css;
+        document.getElementById('themeStyles').textContent = data.custom_css;
+    }
+    if(data.rules) document.getElementById('customRulesView').innerHTML = escapeHtml(data.rules).replace(/\n/g, '<br>');
+    if(data.logo_text) document.getElementById('customLogoView').textContent = data.logo_text;
+
+    const ytUrl = data.music_url || '';
+    const musicTitle = data.music_title || '';
+    const ytId = extractYouTubeId(ytUrl);
+    const infoText = document.getElementById('musicInfoText');
+    
+    if(ytId && infoText){
+        infoText.innerHTML = `🎵 ${escapeHtml(musicTitle || '背景音樂播放中')}`;
+        initYouTubePlayer(ytId);
+    } else if(infoText) {
+        infoText.innerHTML = `💤 此家尚未設定音樂`;
+    }
+}
+
+function initYouTubePlayer(videoId) { if (window.YT && window.YT.Player) createPlayer(videoId); }
+function onYouTubeIframeAPIReady() {
+    if (currentBoard && currentBoard.music_url) {
+        const ytId = extractYouTubeId(currentBoard.music_url);
+        if (ytId) createPlayer(ytId);
+    }
+}
+function createPlayer(videoId) {
+    const startSec = parseInt(currentBoard?.music_start, 10) || 0;
+    if (ytPlayer) { ytPlayer.loadVideoById({'videoId': videoId, 'startSeconds': startSec}); startProgressTracker(); return; }
+    ytPlayer = new YT.Player('youtubePlayerElement', {
+        height: '0', width: '0', videoId: videoId,
+        playerVars: { 'autoplay': 1, 'start': startSec, 'loop': 1, 'playlist': videoId },
+        events: {
+            'onReady': (event) => { event.target.playVideo(); startProgressTracker(); },
+            'onStateChange': (event) => {
+                if (event.data === YT.PlayerState.PLAYING) startProgressTracker();
+                else if (event.data === YT.PlayerState.ENDED) { ytPlayer.seekTo(startSec, true); ytPlayer.playVideo(); }
+                else stopProgressTracker();
+            }
+        }
+    });
+}
+function startProgressTracker() {
+    if (progressTimer) clearInterval(progressTimer);
+    if (endCheckTimer) clearInterval(endCheckTimer);
+    const startSec = parseInt(currentBoard?.music_start, 10) || 0;
+    const endSec = parseInt(currentBoard?.music_end, 10) || 0;
+    progressTimer = setInterval(() => {
+        if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+            const current = ytPlayer.getCurrentTime();
+            const duration = ytPlayer.getDuration() || 1;
+            const percent = (current / duration) * 100;
+            if (document.getElementById('musicProgressBar')) document.getElementById('musicProgressBar').style.width = `${percent}%`;
+            if (document.getElementById('musicTimeText')) document.getElementById('musicTimeText').innerText = `${formatTime(current)} / ${formatTime(duration)}`;
+        }
+    }, 500);
+    if (endSec > 0 && endSec > startSec) {
+        endCheckTimer = setInterval(() => {
+            if (ytPlayer && ytPlayer.getCurrentTime() >= endSec) ytPlayer.seekTo(startSec, true);
+        }, 300);
+    }
+}
+function stopProgressTracker() { if (progressTimer) clearInterval(progressTimer); if (endCheckTimer) clearInterval(endCheckTimer); }
+function formatTime(seconds) {
+    return `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`;
+}
+function seekMusic(event) {
+    if (!ytPlayer || typeof ytPlayer.getDuration !== 'function') return;
+    ytPlayer.seekTo(ytPlayer.getDuration() * ((event.clientX - event.currentTarget.getBoundingClientRect().left) / event.currentTarget.clientWidth), true);
+}
+function playMusic(){
+    if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+        ytPlayer.playVideo();
+        if(document.getElementById('musicInfoText')) document.getElementById('musicInfoText').innerHTML = `🎵 ${escapeHtml(currentBoard?.music_title || '背景音樂')}`;
+    } else {
+        const ytId = extractYouTubeId(currentBoard?.music_url || '');
+        if (ytId) createPlayer(ytId); else alert('尚未設定 YouTube 音樂網址！');
+    }
+}
+function pauseMusic(){
+    if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+        ytPlayer.pauseVideo();
+        stopProgressTracker();
+        if(document.getElementById('musicInfoText')) document.getElementById('musicInfoText').innerHTML = `❚❚ 音樂已暫停`;
+    }
+}
+
+async function checkModerator(){
+    isModerator = false;
+    if(!currentUser || !currentBoard) return false;
+    if(currentBoard.owner_id === currentUser.id) { isModerator = true; return true; }
+    const { data } = await supabaseClient.rpc('is_board_moderator', { p_board_id: currentBoard.id });
+    isModerator = !!data;
+    return isModerator;
+}
+
+async function updateAccountUI(){
+    const status = document.getElementById('accountStatus');
+    const loginArea = document.getElementById('boardLoginArea');
+    const logoutButton = document.getElementById('logoutButton');
+    const myBoardButton = document.getElementById('myBoardButton');
+    const postForm = document.getElementById('guestPostForm');
+    const goToSettingsBtn = document.getElementById('goToSettingsBtn');
+
+    if(currentUser){
+        const name = currentUser.user_metadata?.display_name || currentUser.user_metadata?.full_name || '訪客';
+        status.innerHTML = '🌸 已登入：' + escapeHtml(name);
+        loginArea.style.display = 'none';
+        logoutButton.style.display = 'inline-block';
+        myBoardButton.style.display = 'inline-block';
+        postForm.style.display = 'block';
+        if(isModerator) goToSettingsBtn.style.display = 'inline-block';
+    } else {
+        status.innerHTML = '🔐 必須登入 Google 才能留言。';
+        loginArea.style.display = 'block';
+        logoutButton.style.display = 'none';
+        myBoardButton.style.display = 'none';
+        postForm.style.display = 'none';
+        goToSettingsBtn.style.display = 'none';
+    }
+}
+
+async function updateAdminUI(){
+    if(isModerator && currentBoard){
+        document.getElementById('editRules').value = currentBoard.rules || '';
+        document.getElementById('editLogoText').value = currentBoard.logo_text || '';
+        document.getElementById('editMusicUrl').value = currentBoard.music_url || '';
+        document.getElementById('editMusicTitle').value = currentBoard.music_title || '';
+        document.getElementById('editMusicStart').value = currentBoard.music_start || '';
+        document.getElementById('editMusicEnd').value = currentBoard.music_end || '';
+    }
+}
+
+async function handleSaveAdminSettings(){
+    if(!isModerator) return alert('❌ 沒有權限。');
+    const css = document.getElementById('editCssSyntax').value;
+    const rules = document.getElementById('editRules').value;
+    const logo = document.getElementById('editLogoText').value;
+    const musicUrl = document.getElementById('editMusicUrl').value.trim();
+    const musicTitle = document.getElementById('editMusicTitle').value.trim();
+    const musicStart = document.getElementById('editMusicStart').value.trim();
+    const musicEnd = document.getElementById('editMusicEnd').value.trim();
+
+    if (musicUrl !== '' && !extractYouTubeId(musicUrl)) return alert('❌ 音樂設定失敗：僅能填寫 YouTube 網址！');
+
+    const btn = document.getElementById('saveAdminBtn');
+    btn.disabled = true;
+    btn.innerText = '儲存中...';
+
+    try {
+        const { error } = await supabaseClient.rpc('update_my_board_settings', {
+            p_title: currentBoard.title, p_custom_css: css, p_rules: rules, p_logo_text: logo, p_music_url: musicUrl
+        });
+        await supabaseClient.from('boards').update({ music_title: musicTitle, music_start: musicStart, music_end: musicEnd }).eq('id', currentBoard.id);
+        if(error) return alert('❌ 儲存失敗：' + translateSupabaseError(error.message));
+        await loadBoard();
+        toggleSettingsView(false);
+        alert('✅ 你的家已經成功重新裝潢！');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = '💾 儲存並套用裝潢';
+    }
+}
+
+async function handleSecureSubmit(){
+    if(!currentUser) return alert('🔐 請先登入！');
+    const displayName = currentUser.user_metadata?.display_name || currentUser.user_metadata?.full_name || '訪客';
+    const rawContent = document.getElementById('content').value.trim();
+    const captchaInput = document.getElementById('captchaInput').value.trim();
+
+    if(!rawContent) return alert('請填寫留言內容！');
+    const checkResult = validateAndCleanContent(rawContent);
+    if (!checkResult.valid) { alert(checkResult.message); return; }
+    if(captchaInput !== currentCaptcha){ alert('❌ 驗證碼錯誤！'); generateCaptcha(); return; }
+
+    const btn = document.getElementById('postBtn');
+    btn.disabled = true;
+    btn.innerText = '發送中...';
+
+    try {
+        const { error } = await supabaseClient.rpc('create_post', { p_board_id: currentBoard.id, p_nickname: displayName, p_content: rawContent });
+        if(error) return alert('❌ ' + translateSupabaseError(error.message));
+        document.getElementById('content').value = '';
+        generateCaptcha();
+        await loadPosts();
+        alert('🌸 留言成功！');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = '確認送出留言 👣';
+    }
+}
+
+async function loadPosts(){
+    if(!currentBoard) return;
+    const { data, error } = await supabaseClient
+        .from('posts')
+        .select(`id, board_id, author_id, nickname, content, created_at, deleted_at, replies(id, content, created_at)`)
+        .eq('board_id', currentBoard.id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false });
+
+    if(error) throw error;
+    if(data){
+        for(let post of data){
+            if(post.author_id){
+                const { data: bData } = await supabaseClient.from('boards').select('slug').eq('owner_id', post.author_id).maybeSingle();
+                if(bData) post.author_slug = bData.slug;
+            }
+        }
+    }
+    postsCache = data || [];
+    renderPosts();
+}
+
+async function renderPosts(){
+    const list = document.getElementById('securePostList');
+    if(!list) return;
+    list.innerHTML = '';
+    if(!postsCache.length){ list.innerHTML = '<p style="text-align:center;">【目前尚無留言】</p>'; return; }
+
+    for(let index = 0; index < postsCache.length; index++){
+        const post = postsCache[index];
+        const item = document.createElement('div');
+        item.className = 'post-card';
+        const floor = postsCache.length - index;
+        const canDelete = isModerator || (currentUser && post.author_id === currentUser.id);
+        const replies = Array.isArray(post.replies) ? post.replies : [];
+        
+        const repliesHtml = replies.map(r => `
+            <div class="reply-card">
+                <div class="reply-meta">👑 版主回覆</div>
+                <div class="post-body">💬 ${parseSecureContent(r.content)}</div>
+            </div>
+        `).join('');
+
+        let actionsHtml = '';
+        if(post.author_slug) actionsHtml += `<a class="action-btn" href="?id=${encodeURIComponent(post.author_slug)}">🏠 去他的家</a>`;
+        if(canDelete) actionsHtml += `<button onclick="deletePost(${index})">🗑️ 刪除</button>`;
+        if(isModerator) actionsHtml += `<button onclick="toggleReplyBox(${index})">💬 回覆此留言</button>`;
+
+        const replyFormHtml = isModerator ? `
+            <div id="replyBox_${index}" class="reply-form">
+                <textarea id="replyContent_${index}" rows="2" placeholder="輸入版主回覆 (支援特效語法)..." style="font-size:13px;"></textarea>
+                <button onclick="submitReply('${post.id}', ${index})" style="padding:4px 12px;font-size:12px;margin-top:5px;">送出回覆</button>
+            </div>
+        ` : '';
+
+        item.innerHTML = `
+            <div class="post-meta">第 ${floor} 樓 | 👤 ${escapeHtml(post.nickname)} | ${new Date(post.created_at).toLocaleString()}</div>
+            <div class="post-body">💬 ${parseSecureContent(post.content)}</div>
+            <div class="post-actions">${actionsHtml}</div>
+            ${replyFormHtml}
+            ${repliesHtml}
+        `;
+        list.appendChild(item);
+    }
+}
+
+function toggleReplyBox(index){
+    const box = document.getElementById(`replyBox_${index}`);
+    if(box) box.style.display = box.style.display === 'block' ? 'none' : 'block';
+}
+
+async function submitReply(postId, index){
+    const contentBox = document.getElementById(`replyContent_${index}`);
+    const rawContent = contentBox ? contentBox.value.trim() : '';
+    if(!rawContent) return alert('請輸入回覆內容！');
+
+    const checkResult = validateAndCleanContent(rawContent);
+    if (!checkResult.valid) { alert(checkResult.message); return; }
+
+    const { error } = await supabaseClient.from('replies').insert([
+        { post_id: postId, content: rawContent }
+    ]);
+
+    if(error) return alert('❌ 回覆失敗：' + translateSupabaseError(error.message));
+    alert('🌸 回覆成功！');
+    await loadPosts();
+}
+
+async function deletePost(index){
+    const post = postsCache[index];
+    if(!post || !confirm('確定刪除？')) return;
+    await supabaseClient.rpc('delete_post', { p_post_id: post.id });
+    await loadPosts();
+}
+
+window.addEventListener('load', async function(){
+    generateCaptcha();
+    if(!currentBoardSlug){ await checkUserAndBoardState(); return; }
+    document.getElementById('homeSection').style.display = 'none';
+    document.getElementById('guestbookSection').style.display = 'block';
+    try{
+        await refreshAuth();
+        await loadBoard();
+        isModerator = await checkModerator();
+        await updateAccountUI();
+        updateAdminUI();
+        await loadPosts();
+    }catch(e){
+        console.error(e);
+        alert('❌ 載入失敗：' + translateSupabaseError(e.message));
+    }
+});
+</script>
+</body>
+</html>
