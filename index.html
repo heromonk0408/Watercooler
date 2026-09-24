@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>☆~ 時代眼淚灌水簿 - 復古留言板與個人小窩佈置 ~☆</title>
-<meta name="description" content="一個充滿千禧年復古風格的網路小窩與灌水留言板，快來佈置你的專屬空間、播放懷舊音樂並和朋友留言互動！">
+<title>☆~ 時代眼淚灌水簿 - 復古留言板與站長日記 ~☆</title>
+<meta name="description" content="一個充滿千禧年復古風格的網路小窩、站長日記與灌水留言板，快來佈置你的專屬空間、播放懷舊音樂並和朋友互動！">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
@@ -69,6 +69,7 @@ label{
     font-weight:bold;
 }
 input[type="text"],
+input[type="password"],
 select,
 textarea{
     width:100%;
@@ -109,14 +110,14 @@ button:disabled {
     color: #64748B !important;
     cursor: not-allowed;
 }
-.post-card{
+.post-card, .article-card{
     background: var(--box-bg);
     border:1px solid var(--border-color);
     padding:15px;
     margin-top:15px;
     border-radius:8px;
 }
-.post-meta{
+.post-meta, .article-meta{
     font-size:12px;
     color: var(--primary-color);
     border-bottom: 1px dotted var(--border-color);
@@ -124,7 +125,7 @@ button:disabled {
     margin-bottom:10px;
     font-weight:bold;
 }
-.post-body{
+.post-body, .article-body{
     font-size:15px;
     line-height:1.6;
     color: var(--text-color);
@@ -307,6 +308,7 @@ button:disabled {
                 </div>
                 <button id="myBoardButton" style="display:none;" onclick="goToMyBoard()">🏠 回我的家</button>
                 <button id="goToSettingsBtn" style="display:none;" onclick="toggleSettingsView(true)">🎨 進入佈置我的家</button>
+                <button id="goToWriteArticleBtn" style="display:none;" onclick="toggleArticleWriteView(true)" style="background:var(--primary-color); color:#fff;">✍️ 發表站長日記</button>
                 <button id="logoutButton" style="display:none;" onclick="handleLogout()">🚪 登出</button>
             </div>
 
@@ -318,22 +320,40 @@ button:disabled {
                 </div>
             </div>
 
-            <div id="guestPostForm" class="container-box" style="display:none;">
-                <div class="box-title">✍ 留言區</div>
-                <label>留言內容：</label>
-                <textarea id="content" rows="4" maxlength="5000" placeholder="✨ 支援 [blink]閃爍[/blink]、[rainbow]彩虹[/rainbow]、[swing]搖擺[/swing] 等語法！"></textarea>
-                <label>請輸入驗證碼：</label>
-                <div class="captcha-zone">
-                    <span id="captchaCode">1234</span>
-                    <input type="text" id="captchaInput" maxlength="4" style="width:130px;margin-top:0;">
-                </div>
-                <button id="postBtn" onclick="handleSecureSubmit()">確認送出留言 👣</button>
+            <!-- 切換檢視標籤：留言板 vs 站長日記 -->
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button onclick="switchTab('guestbook')" id="tabGuestbookBtn" style="flex:1; margin-top:0; background:var(--primary-color); color:#fff;">💬 訪客灌水留言板</button>
+                <button onclick="switchTab('articles')" id="tabArticlesBtn" style="flex:1; margin-top:0;">📖 站長日記 (Blog)</button>
             </div>
 
-            <div class="container-box" style="border-style:solid;">
-                <div class="box-title">💬 訪客留言</div>
-                <div id="securePostList"><div class="loading">正在讀取留言……</div></div>
+            <!-- 留言板區域 -->
+            <div id="tabContentGuestbook">
+                <div id="guestPostForm" class="container-box" style="display:none;">
+                    <div class="box-title">✍ 留言區</div>
+                    <label>留言內容：</label>
+                    <textarea id="content" rows="4" maxlength="5000" placeholder="✨ 支援 [blink]閃爍[/blink]、[rainbow]彩虹[/rainbow]、[swing]搖擺[/swing] 等語法！"></textarea>
+                    <label>請輸入驗證碼：</label>
+                    <div class="captcha-zone">
+                        <span id="captchaCode">1234</span>
+                        <input type="text" id="captchaInput" maxlength="4" style="width:130px;margin-top:0;">
+                    </div>
+                    <button id="postBtn" onclick="handleSecureSubmit()">確認送出留言 👣</button>
+                </div>
+
+                <div class="container-box" style="border-style:solid;">
+                    <div class="box-title">💬 訪客留言</div>
+                    <div id="securePostList"><div class="loading">正在讀取留言……</div></div>
+                </div>
             </div>
+
+            <!-- 站長日記區域 -->
+            <div id="tabContentArticles" style="display:none;">
+                <div class="container-box" style="border-style:solid;">
+                    <div class="box-title">📖 站長日記列表</div>
+                    <div id="articleListContainer"><div class="loading">正在讀取日記……</div></div>
+                </div>
+            </div>
+
         </div>
 
         <div class="side-column">
@@ -353,6 +373,41 @@ button:disabled {
                     <div id="youtubePlayerElement" style="display:none;"></div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- 發表/編輯文章頁面 -->
+<div id="articleWriteSection" style="display:none; max-width:750px; margin:20px auto;">
+    <div class="container-box admin-box">
+        <div class="box-title">✍️ 發表新日記文章</div>
+        <label>文章標題：</label>
+        <input type="text" id="newArticleTitle" placeholder="例如：今天的天空很藍...">
+        
+        <label>文章內容（支援復古特效語法）：</label>
+        <textarea id="newArticleContent" rows="8" placeholder="寫下你的心情故事..."></textarea>
+        
+        <label>🔒 閱讀密碼（選填，若不填則公開）：</label>
+        <input type="password" id="newArticlePassword" placeholder="若需加密請輸入密碼">
+
+        <div style="margin-top:20px; display:flex; gap:10px;">
+            <button id="saveArticleBtn" onclick="handleSaveNewArticle()">💾 發布文章</button>
+            <button onclick="toggleArticleWriteView(false)">❌ 取消返回</button>
+        </div>
+    </div>
+</div>
+
+<!-- 單篇詳細文章與迴響檢視區 -->
+<div id="articleDetailSection" style="display:none; max-width:850px; margin:20px auto;">
+    <div class="container-box">
+        <button onclick="backToArticleList()" style="margin-top:0; margin-bottom:15px;">⬅️ 返回日記列表</button>
+        <div id="singleArticleView"></div>
+        <div style="margin-top:25px;" class="box-title">💬 文章迴響</div>
+        <div id="articleCommentList"></div>
+        <div id="articleCommentForm" style="margin-top:15px; display:none;">
+            <label>留下迴響：</label>
+            <textarea id="articleCommentContent" rows="3" placeholder="說說你的想法吧..."></textarea>
+            <button onclick="submitArticleComment()">送出迴響 👣</button>
         </div>
     </div>
 </div>
@@ -405,7 +460,7 @@ button:disabled {
 
 <script>
 const SUPABASE_URL = 'https://ewoujibrcobxtbtwnqsc.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3b3VqaWJyY29ieHRidHducXNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMTM4ODksImV4cCI6MjEwNDc4OTg4OX0.nS6eCNMhQyGtb_ZtQTyFlNRIBaYU1FJSWl73QTvmMy4';
+const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3b3VqaWJyY29ieHRidHducXNjIiwicm9sZSI6ImFub24iOjE3ODkyMTM4ODksImV4cCI6MjEwNDc4OTg4OX0.nS6eCNMhQyGtb_ZtQTyFlNRIBaYU1FJSWl73QTvmMy4';
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
@@ -414,6 +469,8 @@ let currentBoard = null;
 let currentBoardSlug = null;
 let isModerator = false;
 let postsCache = [];
+let articlesCache = [];
+let currentArticleId = null;
 let currentCaptcha = '';
 
 let ytPlayer = null;
@@ -447,12 +504,6 @@ function validateAndCleanContent(text) {
             return { valid: false, message: '❌ 為了維護復古小窩的溫馨美好，請勿使用不雅髒話或霸凌字眼喔！' };
         }
     }
-    let checkText = text.replace(/幹嘛/g, '').replace(/幹什麼/g, '').replace(/骨幹/g, '').replace(/樹幹/g, '');
-    if (checkText.includes('幹') && !checkText.includes('幹得好') && !checkText.includes('幹勁')) {
-        if (checkText.includes('幹你') || checkText.includes('幹死') || checkText === '幹' || checkText.endsWith('幹') || checkText.startsWith('幹 ')) {
-            return { valid: false, message: '❌ 請保持友善，避免使用不雅字眼！' };
-        }
-    }
     return { valid: true, text: text };
 }
 
@@ -466,7 +517,6 @@ function parseSecureContent(text){
     safeText = safeText.replace(/\[rainbow\](.*?)\[\/rainbow\]/gi, "<span class='rainbow-text'>$1</span>");
     safeText = safeText.replace(/\[bounce\](.*?)\[\/bounce\]/gi, "<span class='bounce-text'>$1</span>");
     safeText = safeText.replace(/\[neon\](.*?)\[\/neon\]/gi, "<span class='neon-text'>$1</span>");
-    safeText = safeText.replace(/\[wave\](.*?)\[\/wave\]/gi, "<span class='wave-text'>$1</span>");
 
     safeText = safeText.replace(new RegExp('\\[font\\s+color=(' + safeColor + ')\\s*\\](.*?)\\[\\/font\\]', 'gi'), "<span style=\"color:$1\">$2</span>");
     safeText = safeText.replace(new RegExp('\\[glow=(' + safeColor + ')\\](.*?)\\[\\/glow\\]', 'gi'), "<span style=\"color:#fff;text-shadow:0 0 8px $1,0 0 15px $1\">$2</span>");
@@ -474,7 +524,7 @@ function parseSecureContent(text){
     safeText = safeText.replace(/https?:\/\/[^\s]+\.(jpg|jpeg|png|webp|svg)/gi, ' [不允許一般照片] ');
     safeText = safeText.replace(/(https?:\/\/[^\s]+\.gif)/gi, '<img src="$1" alt="閃字" style="max-height:40px; vertical-align:middle;">');
     safeText = safeText.replace(/(https?:\/\/[^\s]+|www\.[^\s]+)/gi, ' [連結已被系統擦除] ');
-    return safeText;
+    return safeText.replace(/\n/g, '<br>');
 }
 
 function extractYouTubeId(url) {
@@ -581,7 +631,36 @@ function toggleSettingsView(show){
     window.scrollTo(0,0);
 }
 
-/* 成套連動配色優化：點選即時產生完整變數並套用預覽與自訂編輯框 */
+function toggleArticleWriteView(show){
+    if(show){
+        document.getElementById('guestbookSection').style.display = 'none';
+        document.getElementById('articleWriteSection').style.display = 'block';
+    } else {
+        document.getElementById('articleWriteSection').style.display = 'none';
+        document.getElementById('guestbookSection').style.display = 'block';
+    }
+    window.scrollTo(0,0);
+}
+
+function switchTab(tab){
+    if(tab === 'guestbook'){
+        document.getElementById('tabContentGuestbook').style.display = 'block';
+        document.getElementById('tabContentArticles').style.display = 'none';
+        document.getElementById('tabGuestbookBtn').style.background = 'var(--primary-color)';
+        document.getElementById('tabGuestbookBtn').style.color = '#fff';
+        document.getElementById('tabArticlesBtn').style.background = 'var(--button-bg)';
+        document.getElementById('tabArticlesBtn').style.color = 'var(--button-text)';
+    } else {
+        document.getElementById('tabContentGuestbook').style.display = 'none';
+        document.getElementById('tabContentArticles').style.display = 'block';
+        document.getElementById('tabArticlesBtn').style.background = 'var(--primary-color)';
+        document.getElementById('tabArticlesBtn').style.color = '#fff';
+        document.getElementById('tabGuestbookBtn').style.background = 'var(--button-bg)';
+        document.getElementById('tabGuestbookBtn').style.color = 'var(--button-text)';
+        loadArticles();
+    }
+}
+
 function applyPresetThemeLocally(){
     const theme = document.getElementById('presetThemeSelect').value;
     let cssVarBlock = '';
@@ -711,6 +790,7 @@ async function updateAccountUI(){
     const myBoardButton = document.getElementById('myBoardButton');
     const postForm = document.getElementById('guestPostForm');
     const goToSettingsBtn = document.getElementById('goToSettingsBtn');
+    const goToWriteArticleBtn = document.getElementById('goToWriteArticleBtn');
 
     if(currentUser){
         const name = currentUser.user_metadata?.display_name || currentUser.user_metadata?.full_name || '訪客';
@@ -719,7 +799,10 @@ async function updateAccountUI(){
         logoutButton.style.display = 'inline-block';
         myBoardButton.style.display = 'inline-block';
         postForm.style.display = 'block';
-        if(isModerator) goToSettingsBtn.style.display = 'inline-block';
+        if(isModerator) {
+            goToSettingsBtn.style.display = 'inline-block';
+            goToWriteArticleBtn.style.display = 'inline-block';
+        }
     } else {
         status.innerHTML = '🔐 必須登入 Google 才能留言。';
         loginArea.style.display = 'block';
@@ -727,6 +810,7 @@ async function updateAccountUI(){
         myBoardButton.style.display = 'none';
         postForm.style.display = 'none';
         goToSettingsBtn.style.display = 'none';
+        goToWriteArticleBtn.style.display = 'none';
     }
 }
 
@@ -770,6 +854,173 @@ async function handleSaveAdminSettings(){
         btn.disabled = false;
         btn.innerText = '💾 儲存並套用裝潢';
     }
+}
+
+async function handleSaveNewArticle(){
+    if(!isModerator) return alert('❌ 沒有權限發布文章。');
+    const title = document.getElementById('newArticleTitle').value.trim();
+    const content = document.getElementById('newArticleContent').value.trim();
+    const password = document.getElementById('newArticlePassword').value.trim();
+
+    if(!title || !content) return alert('請填寫文章標題與內容！');
+    
+    const checkResult = validateAndCleanContent(content);
+    if(!checkResult.valid) { alert(checkResult.message); return; }
+
+    const btn = document.getElementById('saveArticleBtn');
+    btn.disabled = true;
+    btn.innerText = '發布中...';
+
+    try {
+        const { error } = await supabaseClient.from('articles').insert([{
+            board_id: currentBoard.id,
+            author_id: currentUser.id,
+            title: title,
+            content: content,
+            password: password ? password : null
+        }]);
+        if(error) return alert('❌ 發布失敗：' + error.message);
+        alert('🎉 站長日記發表成功！');
+        document.getElementById('newArticleTitle').value = '';
+        document.getElementById('newArticleContent').value = '';
+        document.getElementById('newArticlePassword').value = '';
+        toggleArticleWriteView(false);
+        switchTab('articles');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = '💾 發布文章';
+    }
+}
+
+async function loadArticles(){
+    if(!currentBoard) return;
+    const { data, error } = await supabaseClient
+        .from('articles')
+        .select('*')
+        .eq('board_id', currentBoard.id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false });
+
+    if(error) { console.error(error); return; }
+    articlesCache = data || [];
+    renderArticles();
+}
+
+function renderArticles(){
+    const container = document.getElementById('articleListContainer');
+    if(!container) return;
+    container.innerHTML = '';
+    if(!articlesCache.length){ container.innerHTML = '<p style="text-align:center;">【目前尚無站長日記】</p>'; return; }
+
+    articlesCache.forEach(art => {
+        const item = document.createElement('div');
+        item.className = 'article-card';
+        const hasPassword = art.password && art.password.length > 0;
+        
+        item.innerHTML = `
+            <div class="article-meta">📅 ${new Date(art.created_at).toLocaleString()} ${hasPassword ? ' | 🔒 有密碼鎖' : ' | 🌐 公開'}</div>
+            <div style="font-size:17px; font-weight:bold; color:var(--title-color); margin-bottom:8px;">${escapeHtml(art.title)}</div>
+            <button onclick="openArticle('${art.id}', ${hasPassword})">📖 閱讀日記</button>
+            ${isModerator ? `<button onclick="deleteArticle('${art.id}')" style="background:#FEE2E2; color:#991B1B; border-color:#F87171; margin-left:5px;">🗑️ 刪除</button>` : ''}
+        `;
+        container.appendChild(item);
+    });
+}
+
+async function openArticle(articleId, hasPassword){
+    const art = articlesCache.find(a => a.id === articleId);
+    if(!art) return;
+
+    if(hasPassword && !isModerator){
+        const pwd = prompt('這篇日記有密碼鎖，請輸入閱讀密碼：');
+        if(pwd !== art.password) { alert('❌ 密碼錯誤！'); return; }
+    }
+
+    currentArticleId = articleId;
+    document.getElementById('guestbookSection').style.display = 'none';
+    document.getElementById('articleDetailSection').style.display = 'block';
+
+    const singleView = document.getElementById('singleArticleView');
+    singleView.innerHTML = `
+        <div style="font-size:20px; font-weight:bold; color:var(--title-color); margin-bottom:10px;">${escapeHtml(art.title)}</div>
+        <div class="article-meta" style="margin-bottom:15px;">📅 ${new Date(art.created_at).toLocaleString()}</div>
+        <div class="article-body">${parseSecureContent(art.content)}</div>
+    `;
+
+    document.getElementById('articleCommentForm').style.display = currentUser ? 'block' : 'none';
+    loadArticleComments(articleId);
+    window.scrollTo(0,0);
+}
+
+function backToArticleList(){
+    currentArticleId = null;
+    document.getElementById('articleDetailSection').style.display = 'none';
+    document.getElementById('guestbookSection').style.display = 'block';
+    switchTab('articles');
+}
+
+async function loadArticleComments(articleId){
+    const list = document.getElementById('articleCommentList');
+    list.innerHTML = '<div class="loading">正在載入迴響……</div>';
+
+    const { data, error } = await supabaseClient
+        .from('article_comments')
+        .select('*')
+        .eq('article_id', articleId)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true });
+
+    if(error){ list.innerHTML = '<p>載入迴響失敗</p>'; return; }
+    if(!data.length){ list.innerHTML = '<p style="text-align:center;">【目前尚無迴響，快來搶頭香！】</p>'; return; }
+
+    list.innerHTML = '';
+    data.forEach(comm => {
+        const card = document.createElement('div');
+        card.className = 'reply-card';
+        card.style.margin = '10px 0';
+        card.innerHTML = `
+            <div class="reply-meta">👤 ${escapeHtml(comm.nickname)} | ${new Date(comm.created_at).toLocaleString()}</div>
+            <div class="post-body">${parseSecureContent(comm.content)}</div>
+            ${(isModerator || (currentUser && comm.author_id === currentUser.id)) ? `<button onclick="deleteArticleComment('${comm.id}')" style="padding:2px 8px; font-size:11px; margin-top:5px;">刪除</button>` : ''}
+        `;
+        list.appendChild(card);
+    });
+}
+
+async function submitArticleComment(){
+    if(!currentUser || !currentArticleId) return;
+    const nickname = currentUser.user_metadata?.display_name || currentUser.user_metadata?.full_name || '訪客';
+    const contentBox = document.getElementById('articleCommentContent');
+    const content = contentBox.value.trim();
+
+    if(!content) return alert('請輸入迴響內容！');
+    const checkResult = validateAndCleanContent(content);
+    if(!checkResult.valid) { alert(checkResult.message); return; }
+
+    const { error } = await supabaseClient.from('article_comments').insert([{
+        article_id: currentArticleId,
+        author_id: currentUser.id,
+        nickname: nickname,
+        content: content
+    }]);
+
+    if(error) return alert('❌ 迴響送出失敗：' + error.message);
+    contentBox.value = '';
+    loadArticleComments(currentArticleId);
+}
+
+async function deleteArticleComment(commentId){
+    if(!confirm('確定刪除這則迴響嗎？')) return;
+    const { error } = await supabaseClient.from('article_comments').update({ deleted_at: new Date() }).eq('id', commentId);
+    if(error) return alert('刪除失敗');
+    loadArticleComments(currentArticleId);
+}
+
+async function deleteArticle(articleId){
+    if(!confirm('確定刪除這篇日記嗎？')) return;
+    const { error } = await supabaseClient.from('articles').update({ deleted_at: new Date() }).eq('id', articleId);
+    if(error) return alert('刪除失敗');
+    loadArticles();
 }
 
 async function handleSecureSubmit(){
