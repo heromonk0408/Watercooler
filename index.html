@@ -423,7 +423,7 @@ button:disabled {
 
         <label>🎨 快速選擇成套美感配色主題：</label>
         <select id="presetThemeSelect" onchange="applyPresetThemeLocally()">
-            <option value="skyblue">☁️ 經典天空藍 (粉藍色調清新風)</option>
+            <option value="skyblue">☁️️ 經典天空藍 (粉藍色調清新風)</option>
             <option value="sakura">🌸 懷舊櫻花粉 (粉紅色框與浪漫字體)</option>
             <option value="mint">🌿 森林薄荷綠 (自然舒爽清新綠)</option>
             <option value="dark">🐼 簡約黑白灰 (沈穩高質感灰階風)</option>
@@ -464,7 +464,7 @@ button:disabled {
 
 <script>
 const SUPABASE_URL = 'https://ewoujibrcobxtbtwnqsc.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3b3VqaWJyY29ieHRidHducXNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMTM4ODksImV4cCI6MjEwNDc4OTg4OX0.nS6eCNMhQyGtb_ZtQTyFlNRIBaYU1FJSWl73QTvmMy4';
+const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3b3VqaWJyY29ieHRidHducXNjIjcjOiJzZXNzaW9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMTM4ODksImV4cCI6MjEwNDc4OTg4OX0.nS6eCNMhQyGtb_ZtQTyFlNRIBaYU1FJSWl73QTvmMy4';
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
@@ -568,25 +568,32 @@ async function handleGoogleLogin() {
     if (error) alert('❌ Google 登入失敗：' + error.message);
 }
 
+// 嚴格強制檢查：沒登入秀登入，有登入沒建窩就強制鎖在建窩頁面
 async function checkUserAndBoardState() {
     const { data } = await supabaseClient.auth.getSession();
     currentUser = data?.session?.user || null;
+    
     if (!currentUser) {
         document.getElementById('homeSection').style.display = 'block';
         document.getElementById('loginSubSection').style.display = 'block';
         document.getElementById('setupBoardSubSection').style.display = 'none';
-        return;
+        document.getElementById('guestbookSection').style.display = 'none';
+        return false;
     }
+
     const { data: existingBoard } = await supabaseClient.from('boards').select('*').eq('owner_id', currentUser.id).maybeSingle();
+    
     if (!existingBoard) {
         document.getElementById('homeSection').style.display = 'block';
         document.getElementById('loginSubSection').style.display = 'none';
         document.getElementById('setupBoardSubSection').style.display = 'block';
+        document.getElementById('guestbookSection').style.display = 'none';
         document.getElementById('regDisplayName').value = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || '';
+        return false;
     } else {
         currentBoard = existingBoard;
         currentBoardSlug = existingBoard.slug;
-        if (!urlParams.get('id')) window.location.href = window.location.pathname + '?id=' + encodeURIComponent(currentBoardSlug);
+        return true;
     }
 }
 
@@ -690,7 +697,6 @@ async function loadBoard(){
     
     document.getElementById('dynamicTitle').innerText = `☆~ ${data.title || data.slug} ~☆`;
     
-    // 動態更新頁面上的日記名稱（分頁按鈕、列表標題、發表按鈕）
     const customName = data.article_section_title || '站長日記';
     document.getElementById('tabArticleBtnText').innerText = `📖 ${customName}`;
     document.getElementById('articleListTitleText').innerText = `📖 ${customName}列表`;
@@ -796,7 +802,6 @@ async function checkModerator(){
 
 async function updateAccountUI(){
     const status = document.getElementById('accountStatus');
-    const loginArea = document.getElementById('boardLoginArea');
     const logoutButton = document.getElementById('logoutButton');
     const myBoardButton = document.getElementById('myBoardButton');
     const postForm = document.getElementById('guestPostForm');
@@ -806,7 +811,6 @@ async function updateAccountUI(){
     if(currentUser){
         const name = currentUser.user_metadata?.display_name || currentUser.user_metadata?.full_name || '訪客';
         status.innerHTML = '🌸 已登入：' + escapeHtml(name);
-        loginArea.style.display = 'none';
         logoutButton.style.display = 'inline-block';
         myBoardButton.style.display = 'inline-block';
         postForm.style.display = 'block';
@@ -814,14 +818,6 @@ async function updateAccountUI(){
             goToSettingsBtn.style.display = 'inline-block';
             goToWriteArticleBtn.style.display = 'inline-block';
         }
-    } else {
-        status.innerHTML = '🔐 必須登入 Google 才能留言。';
-        loginArea.style.display = 'block';
-        logoutButton.style.display = 'none';
-        myBoardButton.style.display = 'none';
-        postForm.style.display = 'none';
-        goToSettingsBtn.style.display = 'none';
-        goToWriteArticleBtn.style.display = 'none';
     }
 }
 
@@ -1167,14 +1163,21 @@ async function deletePost(index){
 
 window.addEventListener('load', async function(){
     generateCaptcha();
-    if(!currentBoardSlug){ 
-        await checkUserAndBoardState(); 
-        return; 
+    
+    // 執行嚴格檢查：沒登入或沒建窩會直接被擋在首頁或設定頁
+    const hasValidBoard = await checkUserAndBoardState();
+    if (!hasValidBoard) return; 
+
+    // 如果沒有帶 id 參數，自動轉址到自己的家
+    if (!currentBoardSlug && currentBoard) {
+        window.location.href = window.location.pathname + '?id=' + encodeURIComponent(currentBoard.slug);
+        return;
     }
+
     document.getElementById('homeSection').style.display = 'none';
     document.getElementById('guestbookSection').style.display = 'block';
+
     try{
-        await refreshAuth();
         await loadBoard();
         isModerator = await checkModerator();
         await updateAccountUI();
