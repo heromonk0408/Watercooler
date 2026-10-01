@@ -586,6 +586,15 @@ async function checkUserAndBoardState() {
     } else {
         currentBoard = existingBoard;
         currentBoardSlug = existingBoard.slug;
+        
+        // 🟢 智慧轉址：如果有記錄原本想去的網址，建好或檢查完後就優先去那裡！
+        const targetUrl = sessionStorage.getItem('target_visit_url');
+        if (targetUrl) {
+            sessionStorage.removeItem('target_visit_url');
+            window.location.href = targetUrl;
+            return;
+        }
+
         if (!urlParams.get('id')) window.location.href = window.location.pathname + '?id=' + encodeURIComponent(currentBoardSlug);
     }
 }
@@ -605,7 +614,15 @@ async function handleSaveFirstBoard() {
         const { error } = await supabaseClient.rpc('create_personal_board', { p_slug: slug, p_title: boardTitle });
         if (error) return alert('❌ 建立失敗（可能代號已被使用）：' + error.message);
         alert('🎉 你的家建立成功！');
-        window.location.href = window.location.pathname + '?id=' + encodeURIComponent(slug);
+        
+        // 🟢 建立成功後，檢查是否有原本想訪問的朋友網址，有就帶他回去，沒有就去他自己的新家
+        const targetUrl = sessionStorage.getItem('target_visit_url');
+        if (targetUrl) {
+            sessionStorage.removeItem('target_visit_url');
+            window.location.href = targetUrl;
+        } else {
+            window.location.href = window.location.pathname + '?id=' + encodeURIComponent(slug);
+        }
     } finally {
         btn.disabled = false;
         btn.innerText = '✨ 完成設定，進入我的家';
@@ -690,7 +707,6 @@ async function loadBoard(){
     
     document.getElementById('dynamicTitle').innerText = `☆~ ${data.title || data.slug} ~☆`;
     
-    // 動態更新頁面上的日記名稱（分頁按鈕、列表標題、發表按鈕）
     const customName = data.article_section_title || '站長日記';
     document.getElementById('tabArticleBtnText').innerText = `📖 ${customName}`;
     document.getElementById('articleListTitleText').innerText = `📖 ${customName}列表`;
@@ -1167,6 +1183,17 @@ async function deletePost(index){
 
 window.addEventListener('load', async function(){
     generateCaptcha();
+    
+    // 清理 Google 登入後帶有的 token 雜訊，防止卡死
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+    }
+
+    // 🟢 如果網址有帶 ?id=xxx，先把它偷偷記在瀏覽器記憶體中，等一下建完家可以帶他回來
+    if (currentBoardSlug) {
+        sessionStorage.setItem('target_visit_url', window.location.href);
+    }
+
     if(!currentBoardSlug){ 
         await checkUserAndBoardState(); 
         return; 
