@@ -301,11 +301,6 @@ button:disabled {
             <div class="container-box">
                 <div class="box-title">👤 會員狀態</div>
                 <div id="accountStatus" class="account-status">正在確認登入狀態……</div>
-                <div id="boardLoginArea" style="display:none; margin-top:10px;">
-                    <button type="button" onclick="handleGoogleLogin()" style="background:#DB4437; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">
-                        🌐 使用 Google 登入
-                    </button>
-                </div>
                 <button id="myBoardButton" style="display:none;" onclick="goToMyBoard()">🏠 回我的家</button>
                 <button id="goToSettingsBtn" style="display:none;" onclick="toggleSettingsView(true)">🎨 進入佈置我的家</button>
                 <button id="goToWriteArticleBtn" style="display:none; background:var(--primary-color); color:#fff;" onclick="toggleArticleWriteView(true)"><span id="writeBtnText">✍️ 發表文章</span></button>
@@ -328,7 +323,7 @@ button:disabled {
 
             <!-- 留言板區域 -->
             <div id="tabContentGuestbook">
-                <div id="guestPostForm" class="container-box" style="display:none;">
+                <div id="guestPostForm" class="container-box" style="display:block;">
                     <div class="box-title">✍ 留言區</div>
                     <label>留言內容：</label>
                     <textarea id="content" rows="4" maxlength="5000" placeholder="✨ 支援 [blink]閃爍[/blink]、[rainbow]彩虹[/rainbow]、[swing]搖擺[/swing] 等語法！"></textarea>
@@ -423,7 +418,7 @@ button:disabled {
 
         <label>🎨 快速選擇成套美感配色主題：</label>
         <select id="presetThemeSelect" onchange="applyPresetThemeLocally()">
-            <option value="skyblue">☁️️ 經典天空藍 (粉藍色調清新風)</option>
+            <option value="skyblue">☁ 經典天空藍 (粉藍色調清新風)</option>
             <option value="sakura">🌸 懷舊櫻花粉 (粉紅色框與浪漫字體)</option>
             <option value="mint">🌿 森林薄荷綠 (自然舒爽清新綠)</option>
             <option value="dark">🐼 簡約黑白灰 (沈穩高質感灰階風)</option>
@@ -804,7 +799,6 @@ async function updateAccountUI(){
     const status = document.getElementById('accountStatus');
     const logoutButton = document.getElementById('logoutButton');
     const myBoardButton = document.getElementById('myBoardButton');
-    const postForm = document.getElementById('guestPostForm');
     const goToSettingsBtn = document.getElementById('goToSettingsBtn');
     const goToWriteArticleBtn = document.getElementById('goToWriteArticleBtn');
 
@@ -813,7 +807,6 @@ async function updateAccountUI(){
         status.innerHTML = '🌸 已登入：' + escapeHtml(name);
         logoutButton.style.display = 'inline-block';
         myBoardButton.style.display = 'inline-block';
-        postForm.style.display = 'block';
         if(isModerator) {
             goToSettingsBtn.style.display = 'inline-block';
             goToWriteArticleBtn.style.display = 'inline-block';
@@ -1164,7 +1157,12 @@ async function deletePost(index){
 window.addEventListener('load', async function(){
     generateCaptcha();
     
-    // 執行嚴格檢查：沒登入或沒建窩會直接被擋在首頁或設定頁
+    // 清理 Google 登入後帶有的 token 雜訊，防止卡死
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+    }
+    
+    // 嚴格強制檢查：沒登入或沒建窩會直接被擋在首頁或設定頁
     const hasValidBoard = await checkUserAndBoardState();
     if (!hasValidBoard) return; 
 
