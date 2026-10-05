@@ -423,7 +423,7 @@ button:disabled {
 
         <label>🎨 快速選擇成套美感配色主題：</label>
         <select id="presetThemeSelect" onchange="applyPresetThemeLocally()">
-            <option value="skyblue">☁️ 經典天空藍 (粉藍色調清新風)</option>
+            <option value="skyblue">☁️️ 經典天空藍 (粉藍色調清新風)</option>
             <option value="sakura">🌸 懷舊櫻花粉 (粉紅色框與浪漫字體)</option>
             <option value="mint">🌿 森林薄荷綠 (自然舒爽清新綠)</option>
             <option value="dark">🐼 簡約黑白灰 (沈穩高質感灰階風)</option>
@@ -559,6 +559,9 @@ async function getMyBoardSlug(){
 }
 
 async function handleGoogleLogin() {
+    // 🟢 點擊登入時，把當前完整網址（包含 ?id=xxx）記錄下來
+    sessionStorage.setItem('target_visit_url', window.location.href);
+
     const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -579,6 +582,7 @@ async function checkUserAndBoardState() {
     }
     const { data: existingBoard } = await supabaseClient.from('boards').select('*').eq('owner_id', currentUser.id).maybeSingle();
     if (!existingBoard) {
+        // 未建立過小窩，強制留在根目錄並顯示建窩區
         document.getElementById('homeSection').style.display = 'block';
         document.getElementById('loginSubSection').style.display = 'none';
         document.getElementById('setupBoardSubSection').style.display = 'block';
@@ -587,7 +591,7 @@ async function checkUserAndBoardState() {
         currentBoard = existingBoard;
         currentBoardSlug = existingBoard.slug;
         
-        // 🟢 智慧轉址：如果有記錄原本想去的網址，建好或檢查完後就優先去那裡！
+        // 🟢 已建過小窩：檢查是否有原本想訪問的網址
         const targetUrl = sessionStorage.getItem('target_visit_url');
         if (targetUrl) {
             sessionStorage.removeItem('target_visit_url');
@@ -595,7 +599,10 @@ async function checkUserAndBoardState() {
             return;
         }
 
-        if (!urlParams.get('id')) window.location.href = window.location.pathname + '?id=' + encodeURIComponent(currentBoardSlug);
+        // 若無特定目標，直接轉跳到自己的小窩
+        if (!urlParams.get('id')) {
+            window.location.href = window.location.pathname + '?id=' + encodeURIComponent(currentBoardSlug);
+        }
     }
 }
 
@@ -615,7 +622,7 @@ async function handleSaveFirstBoard() {
         if (error) return alert('❌ 建立失敗（可能代號已被使用）：' + error.message);
         alert('🎉 你的家建立成功！');
         
-        // 🟢 建立成功後，檢查是否有原本想訪問的朋友網址，有就帶他回去，沒有就去他自己的新家
+        // 🟢 強制設定完小窩後：如果有原本想訪問的朋友網址，優先帶他去；否則去他自己的新家
         const targetUrl = sessionStorage.getItem('target_visit_url');
         if (targetUrl) {
             sessionStorage.removeItem('target_visit_url');
@@ -1184,12 +1191,12 @@ async function deletePost(index){
 window.addEventListener('load', async function(){
     generateCaptcha();
     
-    // 清理 Google 登入後帶有的 token 雜訊，防止卡死
+    // 清理 Google 登入後帶有的 token 雜訊
     if (window.location.hash && window.location.hash.includes('access_token')) {
         window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
     }
 
-    // 🟢 如果網址有帶 ?id=xxx，先把它偷偷記在瀏覽器記憶體中，等一下建完家可以帶他回來
+    // 🟢 載入時若網址帶有 ?id=xxx，先暫存下來以便登入後導回
     if (currentBoardSlug) {
         sessionStorage.setItem('target_visit_url', window.location.href);
     }
@@ -1198,6 +1205,7 @@ window.addEventListener('load', async function(){
         await checkUserAndBoardState(); 
         return; 
     }
+    
     document.getElementById('homeSection').style.display = 'none';
     document.getElementById('guestbookSection').style.display = 'block';
     try{
